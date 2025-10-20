@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Spatie\Permission\Models\Role;
 
 class RolePolicy
 {
@@ -41,6 +41,11 @@ class RolePolicy
      */
     public function update(User $user, Role $role): bool
     {
+        // Prevent editing system roles
+        if ($role->isSystemRole()) {
+            return false;
+        }
+
         return $user->can('update_role');
     }
 
@@ -49,6 +54,11 @@ class RolePolicy
      */
     public function delete(User $user, Role $role): bool
     {
+        // Prevent deleting system roles
+        if ($role->isSystemRole()) {
+            return false;
+        }
+
         return $user->can('delete_role');
     }
 
@@ -65,7 +75,12 @@ class RolePolicy
      */
     public function forceDelete(User $user, Role $role): bool
     {
-        return $user->can('{{ ForceDelete }}');
+        // Prevent force deleting system roles
+        if ($role->isSystemRole()) {
+            return false;
+        }
+
+        return $user->can('force_delete_role');
     }
 
     /**
@@ -73,7 +88,7 @@ class RolePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('{{ ForceDeleteAny }}');
+        return $user->can('force_delete_any_role');
     }
 
     /**
@@ -81,7 +96,7 @@ class RolePolicy
      */
     public function restore(User $user, Role $role): bool
     {
-        return $user->can('{{ Restore }}');
+        return $user->can('restore_role');
     }
 
     /**
@@ -89,7 +104,7 @@ class RolePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('{{ RestoreAny }}');
+        return $user->can('restore_any_role');
     }
 
     /**
@@ -97,7 +112,7 @@ class RolePolicy
      */
     public function replicate(User $user, Role $role): bool
     {
-        return $user->can('{{ Replicate }}');
+        return $user->can('replicate_role');
     }
 
     /**
@@ -105,6 +120,6 @@ class RolePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('{{ Reorder }}');
+        return $user->can('reorder_role');
     }
 }

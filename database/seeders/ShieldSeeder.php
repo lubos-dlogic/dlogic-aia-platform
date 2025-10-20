@@ -21,26 +21,60 @@ class ShieldSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Create permissions for User resource
-        $permissions = [
+        $userPermissions = [
             'view_any_user',
             'view_user',
             'create_user',
             'update_user',
             'delete_user',
+            'delete_any_user',
             'restore_user',
+            'restore_any_user',
             'force_delete_user',
+            'force_delete_any_user',
             'replicate_user',
             'reorder_user',
         ];
 
-        foreach ($permissions as $permission) {
+        foreach ($userPermissions as $permission) {
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
-        // Create roles
-        $superAdminRole = Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
-        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $userRole = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
+        // Create permissions for Role resource
+        $rolePermissions = [
+            'view_any_role',
+            'view_role',
+            'create_role',
+            'update_role',
+            'delete_role',
+            'delete_any_role',
+            'restore_role',
+            'restore_any_role',
+            'force_delete_role',
+            'force_delete_any_role',
+            'replicate_role',
+            'reorder_role',
+        ];
+
+        foreach ($rolePermissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+        }
+
+        // Create roles with descriptions
+        $superAdminRole = Role::firstOrCreate(
+            ['name' => 'super_admin', 'guard_name' => 'web'],
+            ['description' => 'Full system access with all permissions. Can manage all users, roles, and settings.'],
+        );
+
+        $adminRole = Role::firstOrCreate(
+            ['name' => 'admin', 'guard_name' => 'web'],
+            ['description' => 'Administrative access with limited permissions. Can manage users but not roles or system settings.'],
+        );
+
+        $userRole = Role::firstOrCreate(
+            ['name' => 'user', 'guard_name' => 'web'],
+            ['description' => 'Basic user access. Can view their own profile and basic information.'],
+        );
 
         // Assign all permissions to super_admin
         $superAdminRole->givePermissionTo(Permission::all());
