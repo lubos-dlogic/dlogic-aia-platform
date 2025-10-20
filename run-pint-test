@@ -1,0 +1,5 @@
+#!/bin/bash
+
+clear
+
+./vendor/bin/pint --test --config pint.json

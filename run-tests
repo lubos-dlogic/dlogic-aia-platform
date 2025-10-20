@@ -1,0 +1,23 @@
+#!/bin/bash
+
+clear
+
+# Clear configuration cache
+php artisan config:clear
+
+# Clear configuration cache for the testing environment
+php artisan config:clear --env=test
+
+php artisan route:clear
+php artisan route:clear --env=test
+
+# Reset the database for the testing environment
+php artisan migrate:reset --env=test
+
+# Run migrations for the testing environment
+php artisan migrate --env=test
+
+composer dump-autoload
+
+# Run tests in the testing environment
+php artisan test --env=test

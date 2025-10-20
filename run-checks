@@ -1,0 +1,21 @@
+#!/bin/bash
+
+clear
+
+# Print a message in blue
+echo -e "\033[34mRunning Laravel Pint with PSR12 next...\033[0m"
+
+sleep 0.5
+
+./vendor/bin/pint --config pint.json
+
+sleep 1.5
+
+# Print a message in blue
+echo -e "\033[34mRunning PHPUnit tests next...\033[0m"
+
+sleep 0.5
+
+php artisan test --env=test
+
+sleep 0.5

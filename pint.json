@@ -1,0 +1,60 @@
+{
+    "preset": "psr12",
+    "rules": {
+        "@PSR2": true,
+        "array_syntax": {"syntax": "short"},
+        "array_indentation": true,
+        "declare_strict_types": true,
+        "trailing_comma_in_multiline": {"elements": ["arrays", "arguments", "parameters", "match"]},
+        "no_empty_statement": true,
+        "no_extra_blank_lines": {"tokens": ["curly_brace_block", "extra"]},
+        "blank_line_before_statement": {"statements": ["declare", "return", "throw", "try"]},
+        "no_whitespace_in_blank_line": true,
+        "no_whitespace_before_comma_in_array": true,
+        "whitespace_after_comma_in_array": true,
+        "align_multiline_comment": true,
+        "no_blank_lines_after_phpdoc": true,
+        "phpdoc_single_line_var_spacing": true,
+        "phpdoc_var_without_name": true,
+        "no_superfluous_phpdoc_tags": true,
+        "phpdoc_line_span": {"const": "multi", "method": "multi", "property": "multi"},
+        "phpdoc_order": true,
+        "phpdoc_trim": true,
+        "phpdoc_align": {"align": "left"},
+        "phpdoc_var_annotation_correct_order": true,
+        "no_empty_phpdoc": true,
+        "class_attributes_separation": {"elements": {"method": "one"}},
+        "concat_space": {"spacing": "one"},
+        "space_after_semicolon": true,
+        "trim_array_spaces": true,
+        "ternary_operator_spaces": true,
+        "cast_spaces": {"space": "single"},
+        "lowercase_cast": true,
+        "visibility_required": {"elements": ["property", "method"]},
+        "no_leading_import_slash": true,
+        "no_unneeded_control_parentheses": true,
+        "no_unused_imports": true,
+        "ordered_imports": true,
+        "single_line_after_imports": true,
+        "global_namespace_import": {"import_classes": false},
+        "yoda_style": {"equal": false, "identical": false, "less_and_greater": false},
+        "strict_comparison": true
+    },
+    "finder": {
+        "include": [
+            "app",
+            "bootstrap",
+            "config",
+            "database",
+            "routes",
+            "tests"
+        ],
+        "exclude": [
+            "node_modules",
+            "public",
+            "resources",
+            "storage",
+            "vendor"
+        ]
+    }
+}
