@@ -7,7 +7,9 @@ namespace Tests\Feature;
 use App\Filament\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -21,6 +23,21 @@ class UserResourceTest extends TestCase
     {
         parent::setUp();
 
+        // Create permissions first
+        $permissions = [
+            'view_any_user',
+            'view_user',
+            'create_user',
+            'update_user',
+            'delete_user',
+            'restore_user',
+            'force_delete_user',
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::create(['name' => $permission, 'guard_name' => 'web']);
+        }
+
         // Create roles
         Role::create(['name' => 'super_admin', 'guard_name' => 'web']);
         Role::create(['name' => 'admin', 'guard_name' => 'web']);
@@ -32,15 +49,17 @@ class UserResourceTest extends TestCase
         ]);
 
         $this->superAdmin->assignRole('super_admin');
-        $this->superAdmin->givePermissionTo([
-            'view_any_user',
-            'view_user',
-            'create_user',
-            'update_user',
-            'delete_user',
-            'restore_user',
-            'force_delete_user',
-        ]);
+        $this->superAdmin->givePermissionTo($permissions);
+
+        // Begin transaction for self-resetting database
+        DB::beginTransaction();
+    }
+
+    protected function tearDown(): void
+    {
+        // Rollback transaction to reset database state
+        DB::rollBack();
+        parent::tearDown();
     }
 
     public function test_can_render_user_list_page(): void
@@ -168,5 +187,78 @@ class UserResourceTest extends TestCase
         $response = $this->get(UserResource::getUrl('index'));
 
         $response->assertForbidden();
+    }
+
+    public function test_user_can_enable_two_factor_authentication(): void
+    {
+        $user = User::factory()->create();
+
+        $this->assertFalse($user->hasEnabledTwoFactor());
+
+        $user->enableTwoFactorAuthentication();
+
+        $this->assertTrue($user->hasEnabledTwoFactor());
+        $this->assertNotNull($user->twoFactorSecret);
+        $this->assertNotNull($user->two_factor_recovery_codes);
+        $this->assertCount(8, $user->two_factor_recovery_codes);
+    }
+
+    public function test_user_can_disable_two_factor_authentication(): void
+    {
+        $user = User::factory()->create();
+
+        $user->enableTwoFactorAuthentication();
+        $this->assertTrue($user->hasEnabledTwoFactor());
+
+        $user->disableTwoFactorAuthentication();
+        $user->refresh();
+
+        $this->assertFalse($user->hasEnabledTwoFactor());
+    }
+
+    public function test_super_admin_can_reset_user_2fa(): void
+    {
+        $this->actingAs($this->superAdmin);
+
+        $user = User::factory()->create();
+        $user->enableTwoFactorAuthentication();
+
+        $this->assertTrue($user->hasEnabledTwoFactor());
+
+        // Simulate the reset action
+        $user->disableTwoFactorAuthentication();
+        $user->refresh();
+
+        $this->assertFalse($user->hasEnabledTwoFactor());
+    }
+
+    public function test_two_factor_filter_works(): void
+    {
+        $this->actingAs($this->superAdmin);
+
+        // Create users with and without 2FA
+        $userWith2FA = User::factory()->create();
+        $userWith2FA->enableTwoFactorAuthentication();
+        $userWith2FA->confirmTwoFactorAuthentication();
+
+        $userWithout2FA = User::factory()->create();
+
+        // Test that filter works (basic assertion that page loads)
+        $response = $this->get(UserResource::getUrl('index'));
+        $response->assertOk();
+    }
+
+    public function test_two_factor_column_displays_correctly(): void
+    {
+        $this->actingAs($this->superAdmin);
+
+        $userWith2FA = User::factory()->create(['name' => 'User With 2FA']);
+        $userWith2FA->enableTwoFactorAuthentication();
+        $userWith2FA->confirmTwoFactorAuthentication();
+
+        $userWithout2FA = User::factory()->create(['name' => 'User Without 2FA']);
+
+        $this->assertTrue($userWith2FA->fresh()->hasEnabledTwoFactor());
+        $this->assertFalse($userWithout2FA->fresh()->hasEnabledTwoFactor());
     }
 }

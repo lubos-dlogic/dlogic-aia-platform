@@ -14,7 +14,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
 
 class UserResource extends Resource
 {
@@ -99,6 +98,16 @@ class UserResource extends Resource
                     ->trueIcon('heroicon-o-check-badge')
                     ->falseIcon('heroicon-o-x-circle')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('two_factor_enabled')
+                    ->label('2FA')
+                    ->badge()
+                    ->getStateUsing(fn (User $record): string => $record->hasEnabledTwoFactor() ? 'Enabled' : 'Disabled')
+                    ->colors([
+                        'success' => 'Enabled',
+                        'gray' => 'Disabled',
+                    ])
+                    ->icon(fn (User $record): string => $record->hasEnabledTwoFactor() ? 'heroicon-o-shield-check' : 'heroicon-o-shield-exclamation')
+                    ->sortable(false),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -122,9 +131,31 @@ class UserResource extends Resource
                     ->query(fn (Builder $query): Builder => $query->whereNotNull('email_verified_at'))
                     ->label('Email Verified Only')
                     ->toggle(),
+                Tables\Filters\Filter::make('two_factor_enabled')
+                    ->query(fn (Builder $query): Builder => $query->whereHas('breezySessions', function (Builder $query) {
+                        $query->where('two_factor_confirmed_at', '!=', null);
+                    }))
+                    ->label('2FA Enabled')
+                    ->toggle(),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
+                Tables\Actions\Action::make('reset_2fa')
+                    ->label('Reset 2FA')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Reset Two-Factor Authentication')
+                    ->modalDescription('Are you sure you want to reset 2FA for this user? They will need to set it up again.')
+                    ->visible(fn (User $record): bool => $record->hasEnabledTwoFactor() && auth()->user()?->hasRole('super_admin'))
+                    ->action(function (User $record) {
+                        $record->disableTwoFactorAuthentication();
+                        \Filament\Notifications\Notification::make()
+                            ->title('2FA Reset Successfully')
+                            ->success()
+                            ->body('Two-factor authentication has been disabled for this user.')
+                            ->send();
+                    }),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
