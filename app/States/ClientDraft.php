@@ -6,6 +6,11 @@ namespace App\States;
 
 class ClientDraft extends ClientState
 {
+    public function actionText(): string
+    {
+        return 'Revert to Draft';
+    }
+
     public static function name(): string
     {
         return 'draft';

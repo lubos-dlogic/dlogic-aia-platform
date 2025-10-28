@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\States\EngagementAuditState;
+use App\Traits\LogsActivityWithContext;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\ModelStates\HasStates;
 use Spatie\Tags\HasTags;
 
@@ -16,6 +19,8 @@ class EngagementAudit extends Model
     use HasFactory;
     use HasStates;
     use HasTags;
+    use LogsActivity;
+    use LogsActivityWithContext;
 
     /**
      * The table associated with the model.
@@ -68,5 +73,23 @@ class EngagementAudit extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user');
+    }
+
+    /**
+     * Configure activity logging options.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'engagement_fk',
+                'name',
+                'type',
+                'data',
+                'description',
+                'state',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

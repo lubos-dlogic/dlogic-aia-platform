@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\States\EngagementState;
+use App\Traits\LogsActivityWithContext;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\ModelStates\HasStates;
 use Spatie\Tags\HasTags;
 
@@ -17,6 +20,8 @@ class Engagement extends Model
     use HasFactory;
     use HasStates;
     use HasTags;
+    use LogsActivity;
+    use LogsActivityWithContext;
 
     /**
      * The attributes that are mass assignable.
@@ -80,5 +85,24 @@ class Engagement extends Model
     public function processes(): HasMany
     {
         return $this->hasMany(EngagementProcess::class, 'engagement_fk');
+    }
+
+    /**
+     * Configure activity logging options.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'key',
+                'name',
+                'client_fk',
+                'version',
+                'description',
+                'data',
+                'state',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

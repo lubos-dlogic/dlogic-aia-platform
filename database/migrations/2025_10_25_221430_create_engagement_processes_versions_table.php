@@ -12,6 +12,11 @@ return new class() extends Migration {
      */
     public function up(): void
     {
+        // Skip this migration for SQLite (used in tests)
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement(<<<SQL
     CREATE TABLE `engagement_processes_versions` (
       `id` bigint unsigned NOT NULL AUTO_INCREMENT,

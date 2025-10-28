@@ -12,6 +12,11 @@ return new class() extends Migration {
      */
     public function up(): void
     {
+        // Skip this migration for SQLite (used in tests)
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement(<<<SQL
     CREATE TABLE `clients` (
     `id` int unsigned NOT NULL AUTO_INCREMENT,
@@ -23,7 +28,7 @@ return new class() extends Migration {
       `company_vat_gid` varchar(40) DEFAULT NULL,
       `description` text,
       `created_by_user` bigint unsigned DEFAULT NULL,
-      `created_by_process` varchar(100) NOT NULL,
+      `created_by_process` varchar(100) DEFAULT NULL,
       `created_at` timestamp NULL DEFAULT NULL,
       `updated_at` timestamp NULL DEFAULT NULL,
       PRIMARY KEY (`id`),

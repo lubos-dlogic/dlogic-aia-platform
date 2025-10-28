@@ -10,4 +10,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateUser extends CreateRecord
 {
     protected static string $resource = UserResource::class;
+
+    public static string|\Filament\Support\Enums\Alignment $formActionsAlignment = 'right';
 }

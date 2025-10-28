@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class() extends Migration {
@@ -12,24 +13,29 @@ return new class() extends Migration {
      */
     public function up(): void
     {
+        // Skip this migration for SQLite (used in tests)
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('clients', function (Blueprint $table) {
-            $table->string('state')->default('draft')->after('description');
+            $table->string('state')->default('App\\States\\ClientDraft')->after('description');
         });
 
         Schema::table('engagements', function (Blueprint $table) {
-            $table->string('state')->default('planning')->after('data');
+            $table->string('state')->default('App\\States\\EngagementPlanning')->after('data');
         });
 
         Schema::table('engagement_audits', function (Blueprint $table) {
-            $table->string('state')->default('scheduled')->after('description');
+            $table->string('state')->default('App\\States\\EngagementAuditScheduled')->after('description');
         });
 
         Schema::table('engagement_processes', function (Blueprint $table) {
-            $table->string('state')->default('pending')->after('data');
+            $table->string('state')->default('App\\States\\EngagementProcessPending')->after('data');
         });
 
         Schema::table('engagement_processes_versions', function (Blueprint $table) {
-            $table->string('state')->default('draft')->after('data');
+            $table->string('state')->default('App\\States\\EngagementProcessVersionDraft')->after('data');
         });
     }
 

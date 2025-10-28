@@ -18,4 +18,11 @@ class ListRoles extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    public function getMaxContentWidth(): ?string
+    {
+        // 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl',
+        // 'full', 'screen-sm', 'screen-md', 'screen-lg', 'screen-xl', 'screen-2xl'
+        return 'full';
+    }
 }
