@@ -58,7 +58,8 @@ class ClientResource extends Resource
                         Forms\Components\TextInput::make('website')
                             ->url()
                             ->maxLength(250)
-                            ->placeholder('https://example.com'),
+                            ->placeholder('https://example.com')
+                            ->columnSpan(2),
 
                         Forms\Components\TextInput::make('company_gid')
                             ->label('Company Registration ID')
@@ -68,7 +69,7 @@ class ClientResource extends Resource
                             ->label('VAT/Tax ID')
                             ->maxLength(40),
                     ])
-                    ->columns(3),
+                    ->columns(2),
 
                 Forms\Components\Section::make('Additional Information')
                     ->schema([

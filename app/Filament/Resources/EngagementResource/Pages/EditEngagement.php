@@ -12,6 +12,8 @@ class EditEngagement extends EditRecord
 {
     protected static string $resource = EngagementResource::class;
 
+    public static string|\Filament\Support\Enums\Alignment $formActionsAlignment = 'right';
+
     protected function getHeaderActions(): array
     {
         return [

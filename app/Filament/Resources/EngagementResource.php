@@ -22,29 +22,44 @@ class EngagementResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('key')
-                    ->required()
-                    ->maxLength(12),
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(100),
-                Forms\Components\TextInput::make('client_fk')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('version')
-                    ->numeric()
-                    ->default(1),
-                Forms\Components\TextInput::make('description')
-                    ->maxLength(1000),
-                Forms\Components\TextInput::make('data'),
-                Forms\Components\TextInput::make('state')
-                    ->required()
-                    ->maxLength(255)
-                    ->default('planning'),
-                Forms\Components\TextInput::make('created_by_user')
-                    ->numeric(),
-                Forms\Components\TextInput::make('created_by_process')
-                    ->maxLength(100),
+                Forms\Components\Section::make('Client Information')
+                    ->schema([
+                        Forms\Components\TextInput::make('key')
+                            ->maxLength(12)
+                            ->hidden(fn (string $operation) => $operation === 'create')
+                            ->readOnly(fn (string $operation) => $operation === 'edit'),
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(100),
+                        Forms\Components\Select::make('client_fk')
+                            ->label('Client')
+                            ->relationship('client', 'name') // assumes Engagement::client() belongsTo(Client::class, 'client_fk')
+                            ->searchable()
+                            ->preload()
+                            ->getSearchResultsUsing(function (string $search) {
+                                return \App\Models\Client::query()
+                                    ->where('name', 'like', "%{$search}%")
+                                    ->orWhere('clinet_key', 'like', "%{$search}%")
+                                    ->limit(10)
+                                    ->pluck('name', 'id');
+                            })
+                            ->getOptionLabelUsing(fn ($value): ?string => \App\Models\Client::find($value)?->name)
+                            ->required(),
+                        Forms\Components\TextInput::make('version')
+                            ->numeric()
+                            ->default(1),
+                        Forms\Components\TextInput::make('description')
+                            ->maxLength(1000),
+                        Forms\Components\TextInput::make('data'),
+                        Forms\Components\TextInput::make('state')
+                            ->required()
+                            ->maxLength(255)
+                            ->default('planning'),
+                        Forms\Components\TextInput::make('created_by_user')
+                            ->numeric(),
+                        Forms\Components\TextInput::make('created_by_process')
+                            ->maxLength(100),
+                    ]),
             ]);
     }
 
