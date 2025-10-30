@@ -9,6 +9,7 @@
         "php": "^8.2",
         "bezhansalleh/filament-shield": "^3",
         "filament/filament": "^3",
+        "invaders-xx/filament-jsoneditor": "^5.0",
         "jeffgreco13/filament-breezy": "^2.1",
         "laravel/fortify": "^1.31",
         "laravel/framework": "^12.0",

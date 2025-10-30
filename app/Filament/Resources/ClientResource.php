@@ -38,7 +38,7 @@ class ClientResource extends Resource
                             ->maxLength(100)
                             ->columnSpan(2),
 
-                        Forms\Components\TextInput::make('clinet_key')
+                        Forms\Components\TextInput::make('client_key')
                             ->label('Client Key')
                             ->required()
                             ->unique(ignoreRecord: true)
@@ -46,10 +46,22 @@ class ClientResource extends Resource
                             ->alphaDash()
                             ->helperText('Unique identifier for this client'),
 
-                        Forms\Components\TextInput::make('country')
+                        Forms\Components\Select::make('country')
                             ->required()
-                            ->length(2)
-                            ->helperText('ISO 3166-1 alpha-2 country code'),
+                            ->searchable()
+                            ->options([
+                                'NL' => 'Netherlands (NL)',
+                                'GB' => 'United Kingdom (GB)',
+                                'SK' => 'Slovakia (SK)',
+                                'DE' => 'Germany (DE)',
+                                'BE' => 'Belgium (BE)',
+                                'IE' => 'Ireland (IE)',
+                                'CZ' => 'Czech Republic (CZ)',
+                                'PL' => 'Poland (PL)',
+                                'FR' => 'France (FR)',
+                                'DK' => 'Denmark (DK)',
+                            ])
+                            ->helperText('Select country'),
                     ])
                     ->columns(3),
 
@@ -153,7 +165,7 @@ class ClientResource extends Resource
                     ->sortable()
                     ->weight('bold'),
 
-                Tables\Columns\TextColumn::make('clinet_key')
+                Tables\Columns\TextColumn::make('client_key')
                     ->label('Client Key')
                     ->searchable()
                     ->sortable()
@@ -164,7 +176,23 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('country')
                     ->searchable()
                     ->sortable()
-                    ->badge(),
+                    ->badge()
+                    ->formatStateUsing(function ($state) {
+                        $countries = [
+                            'NL' => 'Netherlands',
+                            'GB' => 'United Kingdom',
+                            'SK' => 'Slovakia',
+                            'DE' => 'Germany',
+                            'BE' => 'Belgium',
+                            'IE' => 'Ireland',
+                            'CZ' => 'Czech Republic',
+                            'PL' => 'Poland',
+                            'FR' => 'France',
+                            'DK' => 'Denmark',
+                        ];
+
+                        return $countries[$state] ?? $state;
+                    }),
 
                 Tables\Columns\TextColumn::make('state')
                     ->label('Status')

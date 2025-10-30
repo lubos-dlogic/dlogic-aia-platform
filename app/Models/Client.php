@@ -30,7 +30,7 @@ class Client extends Model
      */
     protected $fillable = [
         'name',
-        'clinet_key',
+        'client_key',
         'country',
         'website',
         'company_gid',
@@ -78,7 +78,7 @@ class Client extends Model
         return LogOptions::defaults()
             ->logOnly([
                 'name',
-                'clinet_key',
+                'client_key',
                 'country',
                 'website',
                 'company_gid',

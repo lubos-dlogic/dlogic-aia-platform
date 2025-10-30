@@ -24,6 +24,13 @@ abstract class EngagementState extends State
             ->allowTransition(EngagementActive::class, EngagementCompleted::class)
             ->allowTransition(EngagementActive::class, EngagementOnHold::class)
             ->allowTransition(EngagementActive::class, EngagementCancelled::class)
+            ->allowTransition(EngagementOnHold::class, EngagementPlanning::class)
+            ->allowTransition(EngagementOnHold::class, EngagementActive::class)
+            ->allowTransition(EngagementOnHold::class, EngagementCancelled::class)
+            ->allowTransition(EngagementOnHold::class, EngagementCompleted::class)
+            ->allowTransition(EngagementCompleted::class, EngagementActive::class)
+            ->allowTransition(EngagementCompleted::class, EngagementCancelled::class)
+            ->allowTransition(EngagementCompleted::class, EngagementOnHold::class)
             ->allowTransition(EngagementCancelled::class, EngagementOnHold::class)
             ->allowTransition(EngagementCancelled::class, EngagementActive::class);
     }

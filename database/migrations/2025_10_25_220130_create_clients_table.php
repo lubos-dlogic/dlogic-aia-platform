@@ -21,7 +21,7 @@ return new class() extends Migration {
     CREATE TABLE `clients` (
     `id` int unsigned NOT NULL AUTO_INCREMENT,
       `name` varchar(100) NOT NULL,
-      `clinet_key` varchar(30) NOT NULL,
+      `client_key` varchar(30) NOT NULL,
       `country` varchar(2) NOT NULL,
       `website` varchar(250) DEFAULT NULL,
       `company_gid` varchar(40) DEFAULT NULL,
@@ -32,7 +32,7 @@ return new class() extends Migration {
       `created_at` timestamp NULL DEFAULT NULL,
       `updated_at` timestamp NULL DEFAULT NULL,
       PRIMARY KEY (`id`),
-      UNIQUE KEY `clinet_key_UNIQUE` (`clinet_key`),
+      UNIQUE KEY `clinet_key_UNIQUE` (`client_key`),
       KEY `client_user_created_fk_idx` (`created_by_user`),
       CONSTRAINT `client_user_created_fk` FOREIGN KEY (`created_by_user`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
     ) ENGINE=InnoDB AUTO_INCREMENT=1001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

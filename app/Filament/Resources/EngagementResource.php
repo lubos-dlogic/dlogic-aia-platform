@@ -17,6 +17,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use InvadersXX\FilamentJsoneditor\Forms\JSONEditor;
 
 class EngagementResource extends Resource
 {
@@ -47,26 +48,41 @@ class EngagementResource extends Resource
                             ->searchable()
                             ->preload()
                             ->getSearchResultsUsing(function (string $search) {
-                                return \App\Models\Client::query()
-                                    ->where('name', 'like', "%{$search}%")
-                                    ->orWhere('clinet_key', 'like', "%{$search}%")
+                                if (trim($search) === '') {
+                                    return collect(); // nothing shown when search empty
+                                }
+
+                                $clients = \App\Models\Client::query()
+                                    ->where(function ($q) use ($search) {
+                                        $q->where('name', 'like', "%{$search}%")
+                                            ->orWhere('client_key', 'like', "%{$search}%");
+                                    })
                                     ->limit(10)
-                                    ->get()
-                                    ->mapWithKeys(fn ($client) => [$client->id => "{$client->name} ({$client->clinet_key})"]);
+                                    ->get();
+
+                                return $clients->isEmpty()
+                                    ? collect() // return empty => no matches shown
+                                    : $clients->mapWithKeys(fn ($c) => [
+                                        $c->id => "{$c->name} ({$c->client_key})"
+                                    ]);
                             })
                             ->getOptionLabelUsing(function ($value): ?string {
                                 $client = \App\Models\Client::find($value);
 
-                                return $client ? "{$client->name} ({$client->clinet_key})" : null;
+                                return $client ? "{$client->name} ({$client->client_key})" : null;
                             })
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} ({$record->client_key})")
                             ->required(),
                         Forms\Components\TextInput::make('version')
                             ->numeric()
                             ->hidden(fn (string $operation) => $operation === 'create')
                             ->readOnly(fn (string $operation) => $operation === 'edit'),
-                        Forms\Components\TextInput::make('description')
-                            ->maxLength(1000),
-                        Forms\Components\TextInput::make('data'),
+                        Forms\Components\Textarea::make('description')
+                            ->rows(3)
+                            ->maxLength(1000)
+                            ->columnSpanFull(),
+                        JSONEditor::make('data')
+                            ->columnSpanFull(),
                     ]),
 
                 Forms\Components\Section::make('Status & Actions')
@@ -155,10 +171,10 @@ class EngagementResource extends Resource
                     ->label('Client')
                     ->formatStateUsing(
                         fn ($record) => $record->client
-                        ? "{$record->client->name} ({$record->client->clinet_key})"
+                        ? "{$record->client->name} ({$record->client->client_key})"
                         : 'N/A',
                     )
-                    ->searchable(['name', 'clinet_key'])
+                    ->searchable(['name', 'client_key'])
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('state')

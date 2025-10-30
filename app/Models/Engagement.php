@@ -88,6 +88,22 @@ class Engagement extends Model
     }
 
     /**
+     * Set the data attribute, handling JSON string input from JSONEditor.
+     */
+    public function setDataAttribute($value): void
+    {
+        // If the value is a JSON string, decode it first
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            // Only use decoded value if it's valid JSON
+            $this->attributes['data'] = json_encode($decoded !== null ? $decoded : $value);
+        } else {
+            // If it's already an array/object, let the cast handle it
+            $this->attributes['data'] = json_encode($value);
+        }
+    }
+
+    /**
      * Configure activity logging options.
      */
     public function getActivitylogOptions(): LogOptions

@@ -19,8 +19,8 @@ class CreateClient extends CreateRecord
     {
         $data['created_by_user'] = Auth::id();
 
-        if (! empty($data['clinet_key'])) {
-            $data['clinet_key'] = Str::upper($data['clinet_key']);
+        if (! empty($data['client_key'])) {
+            $data['client_key'] = Str::upper($data['client_key']);
         }
 
         if (! empty($data['country'])) {
