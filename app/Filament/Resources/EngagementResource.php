@@ -6,6 +6,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\EngagementResource\Pages;
 use App\Models\Engagement;
+use App\States\EngagementActive;
+use App\States\EngagementCancelled;
+use App\States\EngagementCompleted;
+use App\States\EngagementOnHold;
+use App\States\EngagementPlanning;
+use App\States\EngagementState;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -16,13 +22,17 @@ class EngagementResource extends Resource
 {
     protected static ?string $model = Engagement::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-briefcase';
+
+    protected static ?string $navigationGroup = 'Client Management';
+
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Client Information')
+                Forms\Components\Section::make('Engagement Information')
                     ->schema([
                         Forms\Components\TextInput::make('key')
                             ->maxLength(12)
@@ -33,7 +43,7 @@ class EngagementResource extends Resource
                             ->maxLength(100),
                         Forms\Components\Select::make('client_fk')
                             ->label('Client')
-                            ->relationship('client', 'name') // assumes Engagement::client() belongsTo(Client::class, 'client_fk')
+                            ->relationship('client', 'name')
                             ->searchable()
                             ->preload()
                             ->getSearchResultsUsing(function (string $search) {
@@ -41,25 +51,87 @@ class EngagementResource extends Resource
                                     ->where('name', 'like', "%{$search}%")
                                     ->orWhere('clinet_key', 'like', "%{$search}%")
                                     ->limit(10)
-                                    ->pluck('name', 'id');
+                                    ->get()
+                                    ->mapWithKeys(fn ($client) => [$client->id => "{$client->name} ({$client->clinet_key})"]);
                             })
-                            ->getOptionLabelUsing(fn ($value): ?string => \App\Models\Client::find($value)?->name)
+                            ->getOptionLabelUsing(function ($value): ?string {
+                                $client = \App\Models\Client::find($value);
+
+                                return $client ? "{$client->name} ({$client->clinet_key})" : null;
+                            })
                             ->required(),
                         Forms\Components\TextInput::make('version')
                             ->numeric()
-                            ->default(1),
+                            ->hidden(fn (string $operation) => $operation === 'create')
+                            ->readOnly(fn (string $operation) => $operation === 'edit'),
                         Forms\Components\TextInput::make('description')
                             ->maxLength(1000),
                         Forms\Components\TextInput::make('data'),
-                        Forms\Components\TextInput::make('state')
-                            ->required()
-                            ->maxLength(255)
-                            ->default('planning'),
-                        Forms\Components\TextInput::make('created_by_user')
-                            ->numeric(),
-                        Forms\Components\TextInput::make('created_by_process')
-                            ->maxLength(100),
                     ]),
+
+                Forms\Components\Section::make('Status & Actions')
+                    ->schema(function ($record) {
+                        if (! $record) {
+                            return [
+                                Forms\Components\Placeholder::make('state_placeholder')
+                                    ->label('Status')
+                                    ->content('Planning'),
+                            ];
+                        }
+
+                        $current = $record->state;
+                        $currentName = ucfirst($current->name());
+                        $currentColor = $current->color();
+
+                        // Get all allowed target states
+                        $allowedTargets = $current->transitionableStates();
+
+                        // Build transition buttons
+                        $buttons = collect($allowedTargets)->map(function ($target) use ($record) {
+                            /**
+                             * @var EngagementState $targetState
+                             */
+                            $targetState = new $target($record);
+                            $label = $targetState->actionText();
+                            $color = $targetState->color();
+
+                            return Forms\Components\Actions\Action::make("to_{$label}")
+                                ->label($label)
+                                ->color($color)
+                                ->requiresConfirmation()
+                                ->action(fn () => $record->state->transitionTo($target))
+                                ->disabled(! auth()->user()->can('changeState', $record));
+                        })->all();
+
+                        return [
+                            Forms\Components\Placeholder::make('current_state')
+                                ->label('Current Status')
+                                ->content($currentName)
+                                ->extraAttributes(['class' => "font-semibold text-{$currentColor}-500"]),
+
+                            Forms\Components\Actions::make($buttons),
+                        ];
+                    })
+                    ->visible(fn ($record) => $record !== null),
+
+                Forms\Components\Section::make('Metadata')
+                    ->schema([
+                        Forms\Components\Placeholder::make('created_by_user')
+                            ->label('Created By')
+                            ->content(
+                                fn ($record) =>
+                            $record?->creator
+                                ? "{$record->creator->name} - {$record->creator->email}"
+                                : 'n/a',
+                            ),
+
+                        Forms\Components\Placeholder::make('created_by_process')
+                            ->label('Created By Process')
+                            ->content(fn ($record) => $record?->created_by_process ?? 'n/a'),
+                    ])
+                    ->columns(1)
+                    ->visibleOn('edit')
+                    ->collapsible(),
             ]);
     }
 
@@ -68,44 +140,116 @@ class EngagementResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('key')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable()
+                    ->copyable()
+                    ->badge()
+                    ->color('gray'),
+
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold'),
+
                 Tables\Columns\TextColumn::make('client_fk')
-                    ->numeric()
+                    ->label('Client')
+                    ->formatStateUsing(
+                        fn ($record) => $record->client
+                        ? "{$record->client->name} ({$record->client->clinet_key})"
+                        : 'N/A',
+                    )
+                    ->searchable(['name', 'clinet_key'])
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('state')
+                    ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => $state ? ucfirst($state->name()) : 'Unknown')
+                    ->color(fn ($state) => $state ? $state->color() : 'gray')
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('version')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
+
                 Tables\Columns\TextColumn::make('description')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('state')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_by_user')
-                    ->numeric()
-                    ->sortable(),
+                    ->searchable()
+                    ->toggleable()
+                    ->limit(30),
+
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->label('Created By')
+                    ->sortable()
+                    ->toggleable()
+                    ->placeholder('System'),
+
                 Tables\Columns\TextColumn::make('created_by_process')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Created')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Updated')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('state')
+                    ->label('Status')
+                    ->options([
+                        EngagementPlanning::class => 'Planning',
+                        EngagementActive::class => 'Active',
+                        EngagementOnHold::class => 'On Hold',
+                        EngagementCancelled::class => 'Cancelled',
+                        EngagementCompleted::class => 'Completed',
+                    ]),
+
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                            ->label('Created from'),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->label('Created until'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['created_from'], fn ($q, $date) => $q->whereDate('created_at', '>=', $date))
+                            ->when($data['created_until'], fn ($q, $date) => $q->whereDate('created_at', '<=', $date));
+                    }),
             ])
             ->actions([
+                Tables\Actions\Action::make('changeState')
+                    ->label('Change Status')
+                    ->icon('heroicon-o-arrow-path')
+                    ->visible(fn ($record) => auth()->user()->can('changeState', $record))
+                    ->modalHeading(fn ($record) => 'Change Status – ' . ($record->name ?? ''))
+                    ->modalWidth('md')
+                    ->modalContent(fn ($record) => view('filament.components.state-actions', [
+                        'record' => $record,
+                        'allowed' => $record->state->transitionableStates(),
+                    ]))
+                    ->modalFooterActions([])
+                    ->modalSubmitAction(false)
+                    ->modalCancelAction(false)
+                    ->color('secondary')
+                    ->requiresConfirmation(true)
+                    ->action(fn () => null),
+
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array

@@ -9,6 +9,8 @@ use Spatie\ModelStates\StateConfig;
 
 abstract class EngagementState extends State
 {
+    abstract public function actionText(): string;
+
     abstract public function color(): string;
 
     public static function config(): StateConfig

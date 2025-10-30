@@ -20,4 +20,11 @@ class EditClient extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function afterSave(): void
+    {
+        // Refresh the record to show updated values (e.g., recalculated version)
+        $this->record->refresh();
+        $this->fillForm();
+    }
 }

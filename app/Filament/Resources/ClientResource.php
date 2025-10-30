@@ -127,10 +127,11 @@ class ClientResource extends Resource
                     ->schema([
                         Forms\Components\Placeholder::make('created_by_user')
                             ->label('Created By')
-                            ->content(fn ($record) =>
+                            ->content(
+                                fn ($record) =>
                             $record?->creator
                                 ? "{$record->creator->name} - {$record->creator->email}"
-                                : 'n/a'
+                                : 'n/a',
                             ),
 
                         Forms\Components\Placeholder::make('created_by_process')

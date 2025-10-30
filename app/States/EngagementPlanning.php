@@ -6,6 +6,11 @@ namespace App\States;
 
 class EngagementPlanning extends EngagementState
 {
+    public function actionText(): string
+    {
+        return 'Revert to Planning';
+    }
+
     public static function name(): string
     {
         return 'planning';

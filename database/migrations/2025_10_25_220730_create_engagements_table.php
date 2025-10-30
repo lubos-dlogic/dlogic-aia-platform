@@ -32,6 +32,7 @@ return new class() extends Migration {
       `updated_at` timestamp NULL DEFAULT NULL,
       PRIMARY KEY (`id`),
       UNIQUE KEY `key_UNIQUE` (`key`),
+      UNIQUE INDEX `engagement_complex_uq_combo` (`client_fk` ASC, `name` ASC, `version` ASC) VISIBLE,
       KEY `engagement_client_fk_idx` (`client_fk`),
       KEY `engagement_user_fk_idx` (`created_by_user`),
       CONSTRAINT `engagement_client_fk` FOREIGN KEY (`client_fk`) REFERENCES `clients` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,

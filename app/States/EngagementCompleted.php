@@ -6,6 +6,11 @@ namespace App\States;
 
 class EngagementCompleted extends EngagementState
 {
+    public function actionText(): string
+    {
+        return 'Complete';
+    }
+
     public static function name(): string
     {
         return 'completed';

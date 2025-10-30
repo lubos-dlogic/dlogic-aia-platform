@@ -6,6 +6,11 @@ namespace App\States;
 
 class EngagementActive extends EngagementState
 {
+    public function actionText(): string
+    {
+        return 'Activate';
+    }
+
     public static function name(): string
     {
         return 'active';
