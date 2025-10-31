@@ -187,7 +187,12 @@ class EngagementResource extends Resource
                         ? "{$record->client->name} ({$record->client->client_key})"
                         : 'N/A',
                     )
-                    ->searchable(['name', 'client_key'])
+                    ->searchable(query: function ($query, $search) {
+                        return $query->orWhereHas('client', function ($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%")
+                                ->orWhere('client_key', 'like', "%{$search}%");
+                        });
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('state')
