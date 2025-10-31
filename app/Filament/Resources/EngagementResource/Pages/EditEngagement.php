@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\EngagementResource\Pages;
 
 use App\Filament\Resources\EngagementResource;
+use App\Filament\Resources\EngagementResource\Widgets\EngagementActivityTimeline;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -44,5 +45,15 @@ class EditEngagement extends EditRecord
         // Refresh the record and refill the form to show updated values (e.g., recalculated version)
         $this->record->refresh();
         $this->fillForm();
+
+        // Refresh the footer widgets (e.g., Activity Timeline)
+        $this->dispatch('refreshActivityTimeline');
+    }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
+            EngagementActivityTimeline::class,
+        ];
     }
 }

@@ -21,6 +21,8 @@ abstract class EngagementAuditState extends State
             ->allowTransition(EngagementAuditScheduled::class, EngagementAuditInProgress::class)
             ->allowTransition(EngagementAuditScheduled::class, EngagementAuditCancelled::class)
             ->allowTransition(EngagementAuditInProgress::class, EngagementAuditCompleted::class)
-            ->allowTransition(EngagementAuditInProgress::class, EngagementAuditCancelled::class);
+            ->allowTransition(EngagementAuditInProgress::class, EngagementAuditCancelled::class)
+            ->allowTransition(EngagementAuditCompleted::class, EngagementAuditInProgress::class)
+            ->allowTransition(EngagementAuditCompleted::class, EngagementAuditCancelled::class);
     }
 }

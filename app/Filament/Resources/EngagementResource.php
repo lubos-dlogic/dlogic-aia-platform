@@ -117,7 +117,10 @@ class EngagementResource extends Resource
                                 ->label($label)
                                 ->color($color)
                                 ->requiresConfirmation()
-                                ->action(fn () => $record->state->transitionTo($target))
+                                ->action(function ($livewire) use ($record, $target) {
+                                    $record->state->transitionTo($target);
+                                    $livewire->dispatch('refreshActivityTimeline');
+                                })
                                 ->disabled(! auth()->user()->can('changeState', $record));
                         })->all();
 
