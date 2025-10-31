@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
+use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 use App\Filament\Resources\EngagementResource\Pages;
 use App\Models\Engagement;
 use App\States\EngagementActive;
@@ -278,9 +280,13 @@ class EngagementResource extends Resource
 
                 Tables\Actions\EditAction::make(),
             ])
+            ->headerActions([
+                FilamentExportHeaderAction::make('export'),
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    FilamentExportBulkAction::make('export'),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

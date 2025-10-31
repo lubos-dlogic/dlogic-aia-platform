@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
+use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 use App\Filament\Resources\ClientResource\Pages;
 use App\Models\Client;
 use App\States\ClientActive;
@@ -282,9 +284,13 @@ class ClientResource extends Resource
                     ->requiresConfirmation(true)
                     ->action(fn () => null),
             ])
+            ->headerActions([
+                FilamentExportHeaderAction::make('export'),
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    FilamentExportBulkAction::make('export'),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');

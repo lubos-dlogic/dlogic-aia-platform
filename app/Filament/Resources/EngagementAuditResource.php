@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use AlperenErsoy\FilamentExport\Actions\FilamentExportBulkAction;
+use AlperenErsoy\FilamentExport\Actions\FilamentExportHeaderAction;
 use App\Filament\Resources\EngagementAuditResource\Pages;
 use App\Models\EngagementAudit;
 use App\Services\ColorMappingService;
@@ -297,9 +299,13 @@ class EngagementAuditResource extends Resource
 
                 Tables\Actions\EditAction::make(),
             ])
+            ->headerActions([
+                FilamentExportHeaderAction::make('export'),
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    FilamentExportBulkAction::make('export'),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
