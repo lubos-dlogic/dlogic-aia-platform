@@ -63,7 +63,7 @@ class EngagementResource extends Resource
                                 return $clients->isEmpty()
                                     ? collect() // return empty => no matches shown
                                     : $clients->mapWithKeys(fn ($c) => [
-                                        $c->id => "{$c->name} ({$c->client_key})"
+                                        $c->id => "{$c->name} ({$c->client_key})",
                                     ]);
                             })
                             ->getOptionLabelUsing(function ($value): ?string {
@@ -72,7 +72,9 @@ class EngagementResource extends Resource
                                 return $client ? "{$client->name} ({$client->client_key})" : null;
                             })
                             ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} ({$record->client_key})")
-                            ->required(),
+                            ->required()
+                            ->disabled(fn (string $operation) => $operation === 'edit')
+                            ->helperText('Cannot be changed after record is created'),
                         Forms\Components\TextInput::make('version')
                             ->numeric()
                             ->hidden(fn (string $operation) => $operation === 'create')
@@ -144,8 +146,16 @@ class EngagementResource extends Resource
                         Forms\Components\Placeholder::make('created_by_process')
                             ->label('Created By Process')
                             ->content(fn ($record) => $record?->created_by_process ?? 'n/a'),
+
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Created At')
+                            ->content(fn ($record) => $record?->created_at?->format('M d, Y g:i A') ?? 'n/a'),
+
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Updated At')
+                            ->content(fn ($record) => $record?->updated_at?->format('M d, Y g:i A') ?? 'n/a'),
                     ])
-                    ->columns(1)
+                    ->columns(2)
                     ->visibleOn('edit')
                     ->collapsible(),
             ]);
@@ -208,13 +218,13 @@ class EngagementResource extends Resource
                     ->label('Created')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Updated')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('state')

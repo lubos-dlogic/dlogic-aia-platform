@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Models\EngagementAuditTypeEnum;
 use App\States\EngagementAuditState;
 use App\Traits\LogsActivityWithContext;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -53,6 +54,7 @@ class EngagementAudit extends Model
     {
         return [
             'state' => EngagementAuditState::class,
+            'type' => EngagementAuditTypeEnum::class,
             'data' => 'array',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',

@@ -6,6 +6,11 @@ namespace App\States;
 
 class EngagementAuditScheduled extends EngagementAuditState
 {
+    public function actionText(): string
+    {
+        return 'Schedule';
+    }
+
     public static function name(): string
     {
         return 'scheduled';

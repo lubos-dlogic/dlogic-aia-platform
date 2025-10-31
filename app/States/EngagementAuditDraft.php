@@ -6,6 +6,11 @@ namespace App\States;
 
 class EngagementAuditDraft extends EngagementAuditState
 {
+    public function actionText(): string
+    {
+        return 'Set as Draft';
+    }
+
     public static function name(): string
     {
         return 'draft';
