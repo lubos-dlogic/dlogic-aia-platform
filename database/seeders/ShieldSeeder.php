@@ -94,10 +94,10 @@ class ShieldSeeder extends Seeder
 
         // Create super admin user
         $superAdmin = User::firstOrCreate(
-            ['email' => 'admin@dlogic.com'],
+            ['email' => env('SUPERADMIN_USER_EMAIL', 'admin@dlogic.com')],
             [
-                'name' => 'Super Admin',
-                'password' => Hash::make('password'),
+                'name' => env('SUPERADMIN_USER_FULLNAME', 'Super Admin'),
+                'password' => Hash::make(env('SUPERADMIN_USER_PASSWORD', 'password#951')),
                 'email_verified_at' => now(),
             ],
         );
