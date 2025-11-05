@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "==> Resetting Claude Code local auth"
+
+# Kill any existing session (ignore errors if not logged in)
+if command -v claude >/dev/null 2>&1; then
+  claude logout || true
+else
+  echo "⚠️  'claude' CLI not found in PATH. Install with: npm i -g @anthropic-ai/claude-code"
+fi
+
+# Remove cached tokens/config (Linux)
+rm -rf "${HOME}/.config/claude-code" "${HOME}/.claude-code"
+
+# macOS (noop on Linux)
+rm -rf "${HOME}/Library/Application Support/claude-code" 2>/dev/null || true
+
+echo "==> Local auth cleared."
+echo "==> Launching login..."
+claude login
